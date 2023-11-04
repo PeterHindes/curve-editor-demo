@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Curve Editor Demo</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .draggable {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            cursor: move;
+        }
+
+        #curve {
+            top: 0;
+            left: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #path {
+            stroke: black;
+            stroke-width: 2;
+            fill: none;
+            /* z-index: 2; */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="circle1" class="draggable" style="top: 0px; left: 0px;"></div>
+    <div id="circle2" class="draggable" style="top: 100px; left: 100px;"></div>
+    <svg id="curve">
+        <path id="path" stroke="black" stroke-width="2" fill="none" />
+    </svg>
+
+    <script>
+        window.onload = function () {
+            update()
+            const path = document.querySelector('path');
+            const circle1 = document.getElementById('circle1');
+            const circle2 = document.getElementById('circle2');
+
+            let activeObject = null;
+
+            // Add event listeners for mouse down, move, and up events
+            circle1.addEventListener("mousedown", dragStart);
+            
+            circle2.addEventListener("mousedown", dragStart);
+
+            function dragStart(e) {
+                console.log('dragStart');
+                activeObject = e.target;
+                activeObject.style.zIndex = 1;
+                activeObject.style.cursor = "grabbing";
+                document.addEventListener("mousemove", drag);
+                document.addEventListener("mouseup", dragEnd);
+            }
+
+            function drag(e) {
+                e.preventDefault();
+
+                const x = e.clientX - activeObject.offsetWidth / 2;
+                const y = e.clientY - activeObject.offsetHeight / 2;
+
+                activeObject.style.left = `${x}px`;
+                activeObject.style.top = `${y}px`;
+                update();
+            }
+
+            function dragEnd(e) {
+                activeObject.style.zIndex = 0;
+                activeObject.style.cursor = "grab";
+                activeObject = null;
+                document.removeEventListener("mousemove", drag);
+                document.removeEventListener("mouseup", dragEnd);
+            }
+
+            function update() {
+                const x1 = circle1.offsetLeft + circle1.offsetWidth / 2;
+                const y1 = circle1.offsetTop + circle1.offsetHeight / 2;
+                const x2 = circle2.offsetLeft + circle2.offsetWidth / 2;
+                const y2 = circle2.offsetTop + circle2.offsetHeight / 2;
+
+                path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
+            }
+        }
+    </script>
+</body>
+
+</html>
