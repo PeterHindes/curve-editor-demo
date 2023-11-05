@@ -4,19 +4,35 @@
 <head>
     <title>Curve Editor Demo</title>
     <style>
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
         }
+
+        body {
+            overflow: hidden;
+        }
+
         .draggable {
             position: absolute;
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background-color: red;
+            background-color: rgba(128, 0, 128, 0.5);
             cursor: move;
+        }
+
+        #curveEditor {
+            position: absolute;
+            bottom: 0px;
+            width: 100%;
+            height: 50%;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin: 0;
+            padding: 0;
         }
 
         #curve {
@@ -31,35 +47,70 @@
             stroke: black;
             stroke-width: 2;
             fill: none;
-            /* z-index: 2; */
+        }
+
+        #animationViewer {
+            position: relative;
+            height: 100px;
+            width: 100%;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        #animatedCircle {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            transition: all 1s;
         }
     </style>
 </head>
 
 <body>
-    <div id="circle1" class="draggable" style="top: 0px; left: 0px;"></div>
-    <div id="circle2" class="draggable" style="top: 100px; left: 100px;"></div>
-    <svg id="curve">
-        <path id="path" stroke="black" stroke-width="2" fill="none" />
-    </svg>
+    <button id="compile">Compile</button>
+    <div id="animationViewer">
+        <div id="animatedCircle"></div>
+    </div>
+    <div id="curveEditor">
+        <div id="circle1" class="draggable" style="top: 0px; left: 0px;"></div>
+        <div id="circle2" class="draggable" style="bottom: 0px; right: 0px;"></div>
+        <div id="circle3" class="draggable" style="top: 0px; right: 0px;"></div>
+        <div id="circle4" class="draggable" style="bottom: 0px; left: 0px;"></div>
+        <svg id="curve">
+            <path id="path" stroke="black" stroke-width="2" fill="none" />
+        </svg>
+    </div>
 
     <script>
         window.onload = function () {
-            update()
             const path = document.querySelector('path');
             const circle1 = document.getElementById('circle1');
             const circle2 = document.getElementById('circle2');
+            const circle3 = document.getElementById('circle3');
+            const circle4 = document.getElementById('circle4');
+            const curveEditor = document.getElementById('curveEditor');
+            const animatedCircle = document.getElementById('animatedCircle');
+
 
             let activeObject = null;
 
+            update()
             // Add event listeners for mouse down, move, and up events
-            circle1.addEventListener("mousedown", dragStart);
-            
-            circle2.addEventListener("mousedown", dragStart);
+            // circle1.addEventListener("mousedown", dragStart);
+            // circle2.addEventListener("mousedown", dragStart);
+            circle3.addEventListener("mousedown", dragStart);
+            circle4.addEventListener("mousedown", dragStart);
 
             function dragStart(e) {
-                console.log('dragStart');
+                e.preventDefault();
+
                 activeObject = e.target;
+                console.log('dragStart', activeObject);
                 activeObject.style.zIndex = 1;
                 activeObject.style.cursor = "grabbing";
                 document.addEventListener("mousemove", drag);
@@ -69,8 +120,9 @@
             function drag(e) {
                 e.preventDefault();
 
-                const x = e.clientX - activeObject.offsetWidth / 2;
-                const y = e.clientY - activeObject.offsetHeight / 2;
+                const containerRect = curveEditor.getBoundingClientRect();
+                const x = e.clientX - containerRect.left - activeObject.offsetWidth / 2;
+                const y = e.clientY - containerRect.top - activeObject.offsetHeight / 2;
 
                 activeObject.style.left = `${x}px`;
                 activeObject.style.top = `${y}px`;
@@ -78,6 +130,8 @@
             }
 
             function dragEnd(e) {
+                e.preventDefault();
+
                 activeObject.style.zIndex = 0;
                 activeObject.style.cursor = "grab";
                 activeObject = null;
@@ -86,12 +140,55 @@
             }
 
             function update() {
+                console.log('update');
                 const x1 = circle1.offsetLeft + circle1.offsetWidth / 2;
                 const y1 = circle1.offsetTop + circle1.offsetHeight / 2;
                 const x2 = circle2.offsetLeft + circle2.offsetWidth / 2;
                 const y2 = circle2.offsetTop + circle2.offsetHeight / 2;
+                const x3 = circle3.offsetLeft + circle3.offsetWidth / 2;
+                const y3 = circle3.offsetTop + circle3.offsetHeight / 2;
+                const x4 = circle4.offsetLeft + circle4.offsetWidth / 2;
+                const y4 = circle4.offsetTop + circle4.offsetHeight / 2;
 
-                path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
+                path.setAttribute('d', `M ${x1} ${y1} C ${x3} ${y3}, ${x4} ${y4}, ${x2} ${y2}`);
+            }
+
+            document.getElementById('compile').addEventListener('click', function () {
+                resetAnimation();
+                playAnimation(compileAnimation());
+            });
+
+            function compileAnimation() {
+                const max3X = curveEditor.offsetWidth - circle3.offsetWidth;
+                const max3Y = curveEditor.offsetHeight - circle3.offsetHeight;
+                const max4X = curveEditor.offsetWidth - circle4.offsetWidth;
+                const max4Y = curveEditor.offsetHeight - circle4.offsetHeight;
+
+                const x3Percentage = (circle3.offsetLeft / max3X);
+                const y3Percentage = (circle3.offsetTop / max3Y);
+                const x4Percentage = (circle4.offsetLeft / max4X);
+                const y4Percentage = (circle4.offsetTop / max4Y);
+
+                const cssAnimationFunction = `cubic-bezier(${x3Percentage}, ${y3Percentage}, ${x4Percentage}, ${y4Percentage})`;
+
+                // console.log(cssAnimationFunction);
+                return cssAnimationFunction;
+            }
+
+            function playAnimation(atime) {
+                console.log('playAnimation');
+                let animprop=`all 1s ${atime}`
+                console.log(animprop);
+                animatedCircle.style.transition = animprop;
+                animatedCircle.style.left = '90%';
+            }
+
+            function resetAnimation() {
+                console.log('resetAnimation');
+                // animatedCircle.style.animationTimingFunction = 'linear';
+                animatedCircle.style.transition = 'all 0s';
+                animatedCircle.style.left = '10%';
+                console.log(animatedCircle.style.left);
             }
         }
     </script>
