@@ -27,9 +27,9 @@
 
         #curveEditor {
             position: absolute;
-            bottom: 0px;
+            bottom: 25%;
             width: 100%;
-            height: 50%;
+            height: 25%;
             background-color: rgba(0, 0, 0, 0.1);
             margin: 0;
             padding: 0;
@@ -72,12 +72,13 @@
 </head>
 
 <body>
-    <button id="compile">Compile</button>
     <div id="animationViewer">
         <div id="animatedCircle">
-            <img src="goose.png" alt="goose" style="position: absolute; width: 100px; height: 100px; top: -50px; left: -50px;">
+            <img src="goose.png" alt="goose"
+                style="position: absolute; width: 100px; height: 100px; top: -50px; left: -50px;">
         </div>
     </div>
+    <p id="animationtext"></p>
     <div id="curveEditor">
         <div id="circle1" class="draggable" style="top: 0px; left: 0px;"></div>
         <div id="circle2" class="draggable" style="bottom: 0px; right: 0px;"></div>
@@ -97,6 +98,11 @@
             const circle4 = document.getElementById('circle4');
             const curveEditor = document.getElementById('curveEditor');
             const animatedCircle = document.getElementById('animatedCircle');
+
+            const maxX = curveEditor.offsetWidth - circle1.offsetWidth;
+            const maxY = curveEditor.offsetHeight - circle1.offsetHeight;
+            const minX = 0;
+            const minY = 0;
 
 
             let activeObject = null;
@@ -126,7 +132,14 @@
                 const x = e.clientX - containerRect.left - activeObject.offsetWidth / 2;
                 const y = e.clientY - containerRect.top - activeObject.offsetHeight / 2;
 
-                activeObject.style.left = `${x}px`;
+                if (x < minX) {
+                    activeObject.style.left = `${minX}px`;
+                } else if (x > maxX) {
+                    activeObject.style.left = `${maxX}px`;
+                } else {
+                    activeObject.style.left = `${x}px`;
+                }
+
                 activeObject.style.top = `${y}px`;
                 update();
             }
@@ -139,6 +152,8 @@
                 activeObject = null;
                 document.removeEventListener("mousemove", drag);
                 document.removeEventListener("mouseup", dragEnd);
+
+                newCurve();
             }
 
             function update() {
@@ -155,21 +170,23 @@
                 path.setAttribute('d', `M ${x1} ${y1} C ${x3} ${y3}, ${x4} ${y4}, ${x2} ${y2}`);
             }
 
-            document.getElementById('compile').addEventListener('click', function () {
+            function newCurve() {
                 resetAnimation();
-                playAnimation(compileAnimation());
-            });
+                let atime = compileAnimation();
+                updateText(atime);
+                playAnimation(atime);
+            }
+
+            function updateText(atime) {
+                document.getElementById('animationtext').innerHTML = `transition: all 1s ${atime};`;
+            }
 
             function compileAnimation() {
-                const max3X = curveEditor.offsetWidth - circle3.offsetWidth;
-                const max3Y = curveEditor.offsetHeight - circle3.offsetHeight;
-                const max4X = curveEditor.offsetWidth - circle4.offsetWidth;
-                const max4Y = curveEditor.offsetHeight - circle4.offsetHeight;
 
-                const x3Percentage = (circle3.offsetLeft / max3X);
-                const y3Percentage = (circle3.offsetTop / max3Y);
-                const x4Percentage = (circle4.offsetLeft / max4X);
-                const y4Percentage = (circle4.offsetTop / max4Y);
+                const x3Percentage = (circle3.offsetLeft / maxX);
+                const y3Percentage = (circle3.offsetTop / maxY);
+                const x4Percentage = (circle4.offsetLeft / maxX);
+                const y4Percentage = (circle4.offsetTop / maxY);
 
                 const cssAnimationFunction = `cubic-bezier(${x3Percentage}, ${y3Percentage}, ${x4Percentage}, ${y4Percentage})`;
 
