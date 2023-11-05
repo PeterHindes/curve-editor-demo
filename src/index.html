@@ -74,7 +74,9 @@
 <body>
     <button id="compile">Compile</button>
     <div id="animationViewer">
-        <div id="animatedCircle"></div>
+        <div id="animatedCircle">
+            <img src="goose.png" alt="goose" style="position: absolute; width: 100px; height: 100px; top: -50px; left: -50px;">
+        </div>
     </div>
     <div id="curveEditor">
         <div id="circle1" class="draggable" style="top: 0px; left: 0px;"></div>
@@ -177,7 +179,7 @@
 
             function playAnimation(atime) {
                 console.log('playAnimation');
-                let animprop=`all 1s ${atime}`
+                let animprop = `all 1s ${atime}`
                 console.log(animprop);
                 animatedCircle.style.transition = animprop;
                 animatedCircle.style.left = '90%';
