@@ -66,7 +66,22 @@
             height: 20px;
             background-color: red;
             border-radius: 50%;
-            transition: all 1s;
+            /* transition: all 1s; */
+            animation: moveCircle 2s infinite;
+        }
+        @keyframes moveCircle {
+            0% {
+                left: 10%;
+            }
+            25% {
+                left: 10%;
+            }
+            75% {
+                left: 90%;
+            }
+            100% {
+                left: 90%;
+            }
         }
     </style>
 </head>
@@ -171,7 +186,7 @@
             }
 
             function newCurve() {
-                resetAnimation();
+                // resetAnimation();
                 let atime = compileAnimation();
                 updateText(atime);
                 playAnimation(atime);
@@ -196,19 +211,20 @@
 
             function playAnimation(atime) {
                 console.log('playAnimation');
-                let animprop = `all 1s ${atime}`
-                console.log(animprop);
-                animatedCircle.style.transition = animprop;
-                animatedCircle.style.left = '90%';
+                // let animprop = `all 1s ${atime}`
+                // console.log(animprop);
+                // animatedCircle.style.transition = animprop;
+                // animatedCircle.style.left = '90%';
+                animatedCircle.style.animationTimingFunction = atime;
             }
 
-            function resetAnimation() {
-                console.log('resetAnimation');
-                // animatedCircle.style.animationTimingFunction = 'linear';
-                animatedCircle.style.transition = 'all 0s';
-                animatedCircle.style.left = '10%';
-                console.log(animatedCircle.style.left);
-            }
+            // function resetAnimation() {
+            //     console.log('resetAnimation');
+            //     // animatedCircle.style.animationTimingFunction = 'linear';
+            //     animatedCircle.style.transition = 'all 0s';
+            //     animatedCircle.style.left = '10%';
+            //     console.log(animatedCircle.style.left);
+            // }
         }
     </script>
 </body>
